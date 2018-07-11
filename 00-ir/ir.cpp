@@ -54,6 +54,5 @@ main(void)
 	TheModule->print(errs(), nullptr);
 
     // We can check the validity of our code like so.
-    auto CErr = make_unique<raw_os_ostream>(std::cout);
-    verifyModule(*TheModule, &(*CErr));
+    verifyModule(*TheModule, &errs());
 }
