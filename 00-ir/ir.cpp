@@ -1,6 +1,6 @@
 /*
  * This is a simple example which generates a function which simply adds the constant
- * value 665 to its sole argument.
+ * value 3 to its sole argument.
  */
 
 #include "llvm/ADT/APInt.h"
@@ -29,7 +29,7 @@ main(void)
 	Type *u32 = Type::getInt32Ty(TheContext);
 	std::vector<Type*> Ints(1, u32);
 	FunctionType *FT = FunctionType::get(u32, Ints, false);
-	Function *F = Function::Create(FT, Function::ExternalLinkage, "add_665", TheModule);
+	Function *F = Function::Create(FT, Function::ExternalLinkage, "add_3", TheModule);
 
     // Give arguments names.
     auto Arg1 = F->args().begin();
@@ -43,7 +43,7 @@ main(void)
 	Builder.SetInsertPoint(BB);
 
     // The block just adds two constants.
-	auto AddConst = ConstantInt::get(TheContext, APInt(32, 665));
+	auto AddConst = ConstantInt::get(TheContext, APInt(32, 3));
 	auto Res = Builder.CreateAdd(Arg1, AddConst, "res");
 
     // Emit return value.
