@@ -53,11 +53,11 @@ bool
 codegenObject(Module *TheModule, std::string ObjName)
 {
     // Init a load of stuff.
-    InitializeAllTargetInfos();
-    InitializeAllTargets();
-    InitializeAllTargetMCs();
-    InitializeAllAsmParsers();
-    InitializeAllAsmPrinters();
+    //InitializeNativeTargetInfo();
+    InitializeNativeTarget();
+    //InitializeNativeTargetMC();
+    InitializeNativeTargetAsmPrinter();
+    InitializeNativeTargetAsmParser();
 
     // Identify the platform.
     auto TargetTriple = sys::getDefaultTargetTriple();
@@ -94,10 +94,14 @@ codegenObject(Module *TheModule, std::string ObjName)
     legacy::PassManager pass;
     auto FileType = TargetMachine::CGFT_ObjectFile;
 
-    if (TheTargetMachine->addPassesToEmitFile(pass, dest, FileType)) {
+    //virtual bool addPassesToEmitFile(PassManagerBase &, raw_pwrite_stream &,
+    //                                 raw_pwrite_stream *, CodeGenFileType,
+    std::cout << "PRE" << std::endl;
+    if (TheTargetMachine->addPassesToEmitFile(pass, dest, nullptr, FileType)) {
         errs() << "can't emit a file of this type";
         return 1;
     }
+    std::cout << "POST" << std::endl;
 
     pass.run(*TheModule);
     dest.flush();
@@ -179,6 +183,7 @@ genMain(LLVMContext &TheContext, Module *TheModule, Function *Add3)
 int
 main(void)
 {
+    std::cout << "STARTING" << std::endl;
     // Start with a LLVM context.
     LLVMContext TheContext;
 
@@ -186,15 +191,19 @@ main(void)
 	Module *TheModule = new Module("mymod", TheContext);
 
     // Get debugging stuff ready.
+    std::cout << "PRE DBG" << std::endl;
     struct DebugStuff Dbg;
     Dbg.DBuilder = new DIBuilder(*TheModule);
+    std::cout << "PRE DBG2" << std::endl;
+    auto File = Dbg.DBuilder->createFile("main.xxx", ".");
     Dbg.TheCU = Dbg.DBuilder->createCompileUnit(dwarf::DW_LANG_C,
-                                                Dbg.DBuilder->createFile("main.xxx", "."),
-                                                "API Example", 0, "", 0);
+                                                File, "API Example", false, "", 0);
 
     // Emit IR functions.
+    std::cout << "PRE IR" << std::endl;
     auto Add3 = genAdd3(TheContext, TheModule, Dbg);
     genMain(TheContext, TheModule, Add3);
+    std::cout << "POST IR" << std::endl;
 
     // Finalise debug info.
     Dbg.DBuilder->finalize();
